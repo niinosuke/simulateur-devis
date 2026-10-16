@@ -1384,4 +1384,158 @@ function normalizeBePhone(raw){
   if(d.startsWith('0')) d = '+32' + d.slice(1);
   return d;
 }
-function is
+
+// --- Validation ---
+function isValidEmail(email){
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+}
+function isValidPhone(raw){
+  if(!raw.trim()) return true; // téléphone optionnel
+  const d = normalizeBePhone(raw);
+  return /^\+32\d{8,9}$/.test(d);
+}
+function isValidTva(raw){
+  return /^BE0?\d{3}\.?\d{3}\.?\d{3}$/i.test(raw.trim().replace(/\s/g,''));
+}
+
+let selectedCiv = '';
+document.querySelectorAll('.civ-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    selectedCiv = btn.dataset.civ;
+    document.querySelectorAll('.civ-btn').forEach(b=>b.classList.toggle('active', b===btn));
+    document.getElementById('fCiv').classList.remove('has-error');
+  });
+});
+
+function clearFieldError(id){
+  document.getElementById(id).classList.remove('has-error');
+}
+
+function validateQuoteForm(){
+  let ok = true;
+
+  if(!selectedCiv){ document.getElementById('fCiv').classList.add('has-error'); ok=false; }
+  else clearFieldError('fCiv');
+
+  const prenom = document.getElementById('cliPrenom').value.trim();
+  if(!prenom){ document.getElementById('fPrenom').classList.add('has-error'); ok=false; }
+  else clearFieldError('fPrenom');
+
+  const nom = document.getElementById('cliNom').value.trim();
+  if(!nom){ document.getElementById('fNom').classList.add('has-error'); ok=false; }
+  else clearFieldError('fNom');
+
+  const email = document.getElementById('cliEmail').value.trim();
+  if(!isValidEmail(email)){ document.getElementById('fEmail').classList.add('has-error'); ok=false; }
+  else clearFieldError('fEmail');
+
+  const tel = document.getElementById('cliTel').value.trim();
+  if(!isValidPhone(tel)){ document.getElementById('fTel').classList.add('has-error'); ok=false; }
+  else clearFieldError('fTel');
+
+  const cp = document.getElementById('cliCp').value.trim();
+  if(cp && !/^\d{4}$/.test(cp)){ document.getElementById('fCp').classList.add('has-error'); ok=false; }
+  else clearFieldError('fCp');
+
+  if(clientType==='entreprise'){
+    const tva = document.getElementById('cliTva').value.trim();
+    if(!isValidTva(tva)){ document.getElementById('fTva').classList.add('has-error'); ok=false; }
+    else clearFieldError('fTva');
+  } else {
+    clearFieldError('fTva');
+  }
+
+  return ok;
+}
+
+// --- Génération du message ---
+function buildQuoteMessage(){
+  const civ = selectedCiv || '';
+  const prenom = document.getElementById('cliPrenom').value.trim();
+  const nom = document.getElementById('cliNom').value.trim();
+  const email = document.getElementById('cliEmail').value.trim();
+  const tel = document.getElementById('cliTel').value.trim();
+  const rue = document.getElementById('cliRue').value.trim();
+  const num = document.getElementById('cliNum').value.trim();
+  const cp = document.getElementById('cliCp').value.trim();
+  const ville = document.getElementById('cliVille').value.trim();
+  const region = document.getElementById('cliRegion').value;
+  const tva = document.getElementById('cliTva').value.trim();
+
+  const lines = [];
+  lines.push('Demande de devis détaillé');
+  lines.push('');
+  lines.push(`Client : ${civ} ${prenom} ${nom}`.trim());
+  if(email) lines.push(`E-mail : ${email}`);
+  if(tel) lines.push(`Téléphone : ${normalizeBePhone(tel)}`);
+
+  const adresse = [rue, num].filter(Boolean).join(' ');
+  const loc = [cp, ville].filter(Boolean).join(' ');
+  if(adresse || loc) lines.push(`Adresse : ${[adresse, loc].filter(Boolean).join(', ')}`);
+  if(region) lines.push(`Région : ${region}`);
+
+  lines.push(`Type de client : ${clientType === 'entreprise' ? 'Entreprise' : 'Particulier'}`);
+  if(clientType==='entreprise' && tva) lines.push(`N° de TVA : ${tva}`);
+
+  lines.push('');
+  lines.push('Équipements souhaités :');
+  if(lastQuote.items.length===0){
+    lines.push('- (aucun équipement sélectionné dans le simulateur)');
+  } else {
+    lastQuote.items.forEach(it=>{ lines.push(`- ${it.label} : ${fmt(it.price)}`); });
+  }
+
+  lines.push('');
+  lines.push(`Montant total de l'installation : ${fmt(lastQuote.total)}`);
+  if(lastQuote.mensualite>0){
+    lines.push(`Financement proposé : ${lastQuote.duree} mois à ${lastQuote.taux.toFixed(2)} % → ${fmt(lastQuote.mensualite)} / mois`);
+  }
+
+  return lines.join('\n');
+}
+
+function showQuoteSuccess(text){
+  const el = document.getElementById('quoteSuccess');
+  el.textContent = text;
+  el.classList.add('show');
+}
+
+document.getElementById('copyQuote').addEventListener('click', ()=>{
+  if(!validateQuoteForm()) return;
+  const msg = buildQuoteMessage();
+  const area = document.getElementById('msgText');
+  area.value = msg;
+  document.getElementById('msgPreview').classList.add('show');
+
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(msg)
+      .then(()=> showQuoteSuccess('Message copié dans le presse-papier.'))
+      .catch(()=> showQuoteSuccess('Message généré ci-dessous — sélectionnez le texte pour le copier manuellement.'));
+  } else {
+    area.focus();
+    area.select();
+    showQuoteSuccess('Message généré ci-dessous — sélectionnez le texte pour le copier manuellement.');
+  }
+});
+
+document.getElementById('sendQuote').addEventListener('click', ()=>{
+  if(!validateQuoteForm()) return;
+  const msg = buildQuoteMessage();
+  document.getElementById('msgText').value = msg;
+  document.getElementById('msgPreview').classList.add('show');
+
+  const email = document.getElementById('cliEmail').value.trim();
+  const subject = encodeURIComponent('Demande de devis détaillé');
+  const body = encodeURIComponent(msg);
+  window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+  showQuoteSuccess("Votre messagerie va s'ouvrir avec le message pré-rempli.");
+});
+
+// ---------- INIT ----------
+document.getElementById('dateNow').textContent = new Date().toLocaleDateString('fr-FR', {year:'numeric', month:'long', day:'numeric'});
+addRoom();
+renderPvGrid();
+compute();
+</script>
+</body>
+</html>
