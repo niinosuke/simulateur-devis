@@ -1,0 +1,1387 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulateur de devis énergie</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F5F7FB;
+    --card:#FFFFFF;
+    --line:#E5E8F0;
+    --line-2:#EEF1F6;
+    --text:#0F172A;
+    --text-2:#334155;
+    --muted:#64748B;
+    --muted-2:#94A3B8;
+    --primary:#2563EB;
+    --primary-2:#1D4ED8;
+    --primary-soft:#EEF4FF;
+    --primary-ring:rgba(37,99,235,.18);
+    --accent:#10B981;
+    --accent-soft:#ECFDF5;
+    --amber:#F59E0B;
+    --amber-soft:#FFF7E6;
+    --rose:#EF4444;
+    --rose-soft:#FEF2F2;
+    --violet:#7C3AED;
+    --violet-soft:#F3EEFF;
+    --cyan:#0891B2;
+    --cyan-soft:#ECFEFF;
+    --navy:#0B1B3F;
+    --radius:16px;
+    --radius-sm:10px;
+    --shadow:0 1px 2px rgba(15,23,42,.04), 0 4px 16px rgba(15,23,42,.04);
+    --shadow-lg:0 10px 40px rgba(15,23,42,.10);
+    --sans:'Inter',-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+    --display:'Plus Jakarta Sans','Inter',sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    font-size:15px;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:var(--primary);color:#fff;}
+  button{font-family:inherit;}
+
+  /* ---------- HEADER ---------- */
+  .header{
+    position:sticky;top:0;z-index:20;
+    background:rgba(255,255,255,.85);
+    backdrop-filter:saturate(180%) blur(12px);
+    -webkit-backdrop-filter:saturate(180%) blur(12px);
+    border-bottom:1px solid var(--line);
+  }
+  .header-inner{
+    max-width:1260px;margin:0 auto;padding:16px 28px;
+    display:flex;align-items:center;justify-content:space-between;gap:16px;
+  }
+  .brand{display:inline-flex;align-items:center;gap:12px;}
+  .logo{
+    width:42px;height:42px;border-radius:12px;flex-shrink:0;
+    background:linear-gradient(135deg,var(--primary),var(--accent));
+    display:grid;place-items:center;color:#fff;
+    font-family:var(--display);font-weight:800;font-size:17px;letter-spacing:-.5px;
+    box-shadow:0 6px 16px rgba(37,99,235,.28);
+  }
+  .brand-name{
+    font-family:var(--display);font-weight:800;font-size:20px;letter-spacing:.5px;
+    background:linear-gradient(90deg,var(--primary),var(--accent));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .header-right{display:flex;align-items:center;gap:12px;}
+  .date-pill{font-size:13px;color:var(--muted);}
+  .badge-free{
+    font-size:12.5px;font-weight:600;color:var(--accent);
+    background:var(--accent-soft);padding:6px 12px;border-radius:999px;
+    display:flex;align-items:center;gap:6px;
+  }
+  .badge-free::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--accent);}
+
+  /* ---------- HERO ---------- */
+  .hero{
+    max-width:1260px;margin:0 auto;padding:44px 28px 12px;
+  }
+  .eyebrow{
+    display:inline-block;font-size:12.5px;font-weight:600;color:var(--primary);
+    background:var(--primary-soft);padding:5px 12px;border-radius:999px;margin-bottom:14px;
+  }
+  .hero h1{
+    font-family:var(--display);font-weight:800;font-size:clamp(28px,4vw,40px);
+    letter-spacing:-.8px;line-height:1.15;margin:0 0 10px;max-width:22ch;
+  }
+  .hero h1 span{
+    background:linear-gradient(90deg,var(--primary),var(--accent));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .hero p{color:var(--muted);font-size:16px;margin:0;max-width:60ch;}
+  /* chef animé */
+  .chef-banner{
+    display:inline-flex;align-items:center;gap:18px;margin-top:24px;
+    padding:12px 26px 12px 14px;border-radius:999px;
+    background:linear-gradient(135deg,#FFF7E6,#EEF4FF);
+    border:1px solid var(--line);box-shadow:var(--shadow);
+  }
+  .chef-scene{position:relative;width:88px;height:70px;flex-shrink:0;}
+  .chef{
+    position:absolute;left:4px;bottom:0;font-size:46px;line-height:1;
+    transform-origin:50% 100%;animation:chefBob 1.6s ease-in-out infinite;
+  }
+  .pan{
+    position:absolute;left:46px;bottom:4px;font-size:30px;line-height:1;
+    transform-origin:10% 80%;animation:panFlip 1.6s ease-in-out infinite;
+  }
+  .steam{position:absolute;left:58px;bottom:30px;font-size:14px;opacity:0;animation:steam 2.4s ease-out infinite;}
+  .steam.s2{left:66px;animation-delay:1.2s;}
+  .spark{position:absolute;left:58px;bottom:26px;font-size:15px;opacity:0;animation:toss 3.6s ease-out infinite;}
+  .spark.k2{animation-delay:1.2s;}
+  .spark.k3{animation-delay:2.4s;}
+  .chef-text{display:flex;flex-direction:column;line-height:1.25;}
+  .chef-text strong{
+    font-family:var(--display);font-size:20px;font-weight:800;letter-spacing:-.3px;
+    background:linear-gradient(90deg,var(--primary),var(--accent));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .chef-text > span{font-size:15px;font-weight:600;color:var(--text-2);}
+  .dots i{font-style:normal;animation:dot 1.4s infinite;opacity:0;}
+  .dots i:nth-child(2){animation-delay:.2s;}
+  .dots i:nth-child(3){animation-delay:.4s;}
+  @keyframes chefBob{0%,100%{transform:rotate(-4deg) translateY(0)}50%{transform:rotate(4deg) translateY(-3px)}}
+  @keyframes panFlip{0%,60%,100%{transform:rotate(0)}70%{transform:rotate(-22deg)}80%{transform:rotate(8deg)}}
+  @keyframes steam{0%{opacity:0;transform:translateY(0) scale(.6)}30%{opacity:.8}100%{opacity:0;transform:translateY(-28px) scale(1.2)}}
+  @keyframes toss{
+    0%{opacity:0;transform:translate(0,0) rotate(0)}
+    10%{opacity:1}
+    45%{opacity:1;transform:translate(4px,-40px) rotate(180deg)}
+    70%{opacity:0;transform:translate(8px,-6px) rotate(360deg)}
+    100%{opacity:0}
+  }
+  @keyframes dot{0%,100%{opacity:0}40%{opacity:1}}
+  @media (prefers-reduced-motion:reduce){
+    .chef,.pan,.steam,.spark,.dots i{animation:none;}
+    .dots i{opacity:1;}
+  }
+  @media (max-width:500px){.chef-banner{padding-right:18px;gap:12px;}.chef-text strong{font-size:18px;}}
+
+  /* ---------- LAYOUT ---------- */
+  .layout{
+    max-width:1260px;margin:0 auto;padding:24px 28px 80px;
+    display:grid;grid-template-columns:minmax(0,1fr) 390px;gap:32px;align-items:start;
+  }
+  @media (max-width:1020px){
+    .layout{grid-template-columns:1fr;}
+  }
+  @media (max-width:600px){
+    .header-inner,.hero,.layout{padding-left:16px;padding-right:16px;}
+    .date-pill{display:none;}
+  }
+  main{display:flex;flex-direction:column;gap:18px;min-width:0;}
+
+  /* ---------- CARDS ---------- */
+  .card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    transition:border-color .2s, box-shadow .2s;
+  }
+  .card.is-on{border-color:#BFD3FE;box-shadow:0 0 0 4px var(--primary-ring), var(--shadow);}
+  .card-head{
+    display:flex;align-items:center;gap:16px;padding:22px 26px;
+  }
+  .card-icon{
+    width:46px;height:46px;border-radius:12px;flex-shrink:0;
+    display:grid;place-items:center;
+  }
+  .ic-blue{background:var(--primary-soft);color:var(--primary);}
+  .ic-cyan{background:var(--cyan-soft);color:var(--cyan);}
+  .ic-rose{background:var(--rose-soft);color:var(--rose);}
+  .ic-amber{background:var(--amber-soft);color:var(--amber);}
+  .ic-green{background:var(--accent-soft);color:var(--accent);}
+  .ic-violet{background:var(--violet-soft);color:var(--violet);}
+  .card-title{flex:1;min-width:0;}
+  .card-title h2{
+    font-family:var(--display);font-size:17.5px;font-weight:700;margin:0;letter-spacing:-.2px;
+  }
+  .card-title p{margin:2px 0 0;font-size:13.5px;color:var(--muted);}
+  .step-num{
+    font-size:11.5px;font-weight:700;color:var(--muted-2);letter-spacing:.06em;
+    text-transform:uppercase;display:block;margin-bottom:2px;
+  }
+
+  /* switch */
+  .switch{position:relative;display:inline-flex;align-items:center;gap:10px;cursor:pointer;user-select:none;flex-shrink:0;}
+  .switch input{position:absolute;opacity:0;width:0;height:0;}
+  .switch-track{
+    width:46px;height:26px;border-radius:999px;background:#CBD5E1;position:relative;transition:background .2s;
+  }
+  .switch-track::after{
+    content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;
+    background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:transform .2s;
+  }
+  .switch input:checked + .switch-track{background:var(--primary);}
+  .switch input:checked + .switch-track::after{transform:translateX(20px);}
+  .switch input:focus-visible + .switch-track{box-shadow:0 0 0 4px var(--primary-ring);}
+  .switch-label{font-size:13px;font-weight:600;color:var(--muted);}
+  @media (max-width:600px){.switch-label{display:none;}.card-head{padding:18px;}}
+
+  .section-content{padding:0 26px 26px;border-top:1px solid var(--line-2);padding-top:22px;}
+  .section-content.disabled{display:none;}
+  .card-body{padding:22px 26px 26px;border-top:1px solid var(--line-2);}
+  @media (max-width:600px){.section-content,.card-body{padding-left:18px;padding-right:18px;}}
+
+  .field-group{display:grid;gap:16px;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .row3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+  @media (max-width:680px){.row2,.row3{grid-template-columns:1fr;}}
+
+  label.field{display:flex;flex-direction:column;gap:7px;font-size:13px;font-weight:600;color:var(--text-2);}
+  .field-hint{font-weight:400;color:var(--muted);font-size:12px;}
+  input[type=number],input[type=text],select{
+    background:#fff;border:1px solid var(--line);color:var(--text);
+    padding:11px 14px;border-radius:var(--radius-sm);font-size:14.5px;font-family:var(--sans);
+    width:100%;transition:border-color .15s, box-shadow .15s;
+  }
+  input::placeholder{color:var(--muted-2);}
+  input:hover,select:hover{border-color:#CBD5E1;}
+  input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 4px var(--primary-ring);}
+  select{
+    appearance:none;padding-right:38px;cursor:pointer;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 14px center;
+  }
+
+  /* result line */
+  .result-line{
+    margin-top:18px;padding:14px 16px;border-radius:12px;
+    background:var(--primary-soft);color:var(--text-2);font-size:13.5px;
+    display:flex;gap:10px;align-items:flex-start;
+  }
+  .result-line::before{
+    content:"";width:18px;height:18px;flex-shrink:0;margin-top:1px;
+    background:var(--primary);border-radius:50%;
+    -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z'/%3E%3C/svg%3E") center/contain no-repeat;
+            mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z'/%3E%3C/svg%3E") center/contain no-repeat;
+  }
+  .result-line b{color:var(--text);font-weight:700;}
+  .result-line.warn{background:var(--rose-soft);}
+  .result-line.warn::before{background:var(--rose);}
+
+  /* rooms */
+  .rooms{display:flex;flex-direction:column;gap:10px;margin-top:18px;}
+  .rooms-head{display:grid;grid-template-columns:1fr 150px 40px;gap:10px;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;}
+  .room-row{display:grid;grid-template-columns:1fr 150px 40px;gap:10px;align-items:center;}
+  @media (max-width:500px){.room-row,.rooms-head{grid-template-columns:1fr 110px 40px;}}
+  .btn-remove{
+    width:40px;height:44px;border:1px solid var(--line);background:#fff;color:var(--muted);
+    border-radius:var(--radius-sm);cursor:pointer;display:grid;place-items:center;transition:all .15s;
+  }
+  .btn-remove:hover{color:var(--rose);border-color:#FECACA;background:var(--rose-soft);}
+  .btn-add{
+    margin-top:12px;background:#fff;border:1.5px dashed #C7D2E3;color:var(--primary);
+    padding:11px 18px;border-radius:var(--radius-sm);cursor:pointer;font-size:14px;font-weight:600;
+    display:inline-flex;align-items:center;gap:8px;transition:all .15s;
+  }
+  .btn-add:hover{border-color:var(--primary);background:var(--primary-soft);}
+
+  /* ballon / batterie option cards */
+  .opt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;}
+
+  /* PV tariff segmented */
+  .segmented{
+    display:inline-flex;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:4px;gap:4px;flex-wrap:wrap;
+  }
+  .tariff-btn{
+    background:transparent;border:none;color:var(--muted);padding:9px 16px;border-radius:9px;
+    cursor:pointer;font-size:14px;font-weight:600;display:flex;align-items:center;gap:6px;transition:all .15s;
+  }
+  .tariff-btn .pct{font-size:11.5px;font-weight:600;color:var(--muted-2);}
+  .tariff-btn:hover{color:var(--text);}
+  .tariff-btn.active{background:#fff;color:var(--primary);box-shadow:0 1px 3px rgba(15,23,42,.10);}
+  .tariff-btn.active .pct{color:var(--primary);opacity:.7;}
+
+  .sub-label{font-size:13px;font-weight:600;color:var(--text-2);margin:0 0 10px;}
+
+  /* PV power cards */
+  .pv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:12px;}
+  .pv-card{
+    text-align:left;background:#fff;border:1.5px solid var(--line);border-radius:14px;
+    padding:16px;cursor:pointer;transition:all .15s;position:relative;display:flex;flex-direction:column;gap:6px;
+  }
+  .pv-card:hover{border-color:#A9C2FB;transform:translateY(-1px);}
+  .pv-card.active{border-color:var(--primary);background:var(--primary-soft);box-shadow:0 0 0 3px var(--primary-ring);}
+  .pv-card.active::after{
+    content:"";position:absolute;top:12px;right:12px;width:20px;height:20px;border-radius:50%;
+    background:var(--primary) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center/12px no-repeat;
+  }
+  .pv-kw{font-family:var(--display);font-size:20px;font-weight:800;letter-spacing:-.3px;color:var(--text);}
+  .pv-kw small{font-size:13px;font-weight:600;color:var(--muted);}
+  .pv-mod{font-size:13px;color:var(--muted);}
+  .pv-batt{
+    display:inline-flex;align-items:center;gap:5px;width:fit-content;
+    font-size:12px;font-weight:700;padding:4px 9px;border-radius:999px;
+  }
+  .pv-batt.b10{background:var(--accent-soft);color:#047857;}
+  .pv-batt.b15{background:var(--violet-soft);color:var(--violet);}
+  .pv-price{font-family:var(--display);font-size:18px;font-weight:800;color:var(--primary);margin-top:4px;}
+  .pv-price-cap{font-size:11.5px;color:var(--muted);margin-top:-4px;}
+
+  .pv-summary{
+    margin-top:18px;border:1px solid var(--line);border-radius:14px;overflow:hidden;
+  }
+  .pv-summary-row{display:flex;justify-content:space-between;align-items:center;padding:13px 16px;font-size:14px;color:var(--text-2);}
+  .pv-summary-row + .pv-summary-row{border-top:1px solid var(--line-2);}
+  .pv-summary-row b{color:var(--text);}
+  .pv-summary-row.total{background:var(--bg);font-weight:700;color:var(--text);}
+  .pv-summary-row.total span:last-child{font-family:var(--display);font-size:18px;color:var(--primary);}
+  .tag{font-size:11.5px;font-weight:700;padding:3px 8px;border-radius:6px;background:var(--accent-soft);color:#047857;}
+
+  /* equipment steppers */
+  .equip-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+  @media (max-width:760px){.equip-grid{grid-template-columns:1fr;}}
+  .equip{
+    border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px;
+  }
+  .equip-name{font-weight:600;font-size:14.5px;}
+  .equip-price{font-size:13px;color:var(--muted);}
+  .qty-stepper{
+    display:flex;align-items:center;border:1px solid var(--line);border-radius:10px;width:fit-content;overflow:hidden;background:#fff;
+  }
+  .qty-stepper button{
+    width:38px;height:38px;background:#fff;border:none;color:var(--text-2);cursor:pointer;font-size:18px;transition:background .15s;
+  }
+  .qty-stepper button:hover{background:var(--primary-soft);color:var(--primary);}
+  .qty-stepper span{width:42px;text-align:center;font-weight:700;font-size:15px;}
+
+  .note{
+    margin-top:16px;font-size:12.5px;color:var(--muted);display:flex;gap:8px;
+    padding:12px 14px;background:var(--bg);border-radius:10px;
+  }
+
+  /* ---------- SIDEBAR ---------- */
+  aside{position:sticky;top:92px;display:flex;flex-direction:column;gap:16px;}
+  @media (max-width:1020px){aside{position:static;}}
+  .side-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow-lg);overflow:hidden;}
+  .side-head{padding:20px 22px 6px;display:flex;align-items:center;justify-content:space-between;}
+  .side-head h3{font-family:var(--display);font-size:16px;font-weight:700;margin:0;}
+  .side-count{font-size:12px;font-weight:600;color:var(--primary);background:var(--primary-soft);padding:3px 9px;border-radius:999px;}
+  #lineItems{padding:4px 22px 6px;}
+  .line-item{
+    display:flex;justify-content:space-between;gap:12px;font-size:13.5px;padding:11px 0;border-bottom:1px solid var(--line-2);color:var(--text-2);
+  }
+  .line-item:last-child{border-bottom:none;}
+  .line-item .v{font-weight:700;color:var(--text);white-space:nowrap;}
+  .line-item.empty{color:var(--muted-2);justify-content:center;padding:22px 0;font-size:13px;}
+
+  .total-box{
+    margin:10px 14px 14px;padding:20px;border-radius:14px;
+    background:linear-gradient(135deg,var(--navy),#1E3A8A);color:#fff;
+  }
+  .total-box .cap{font-size:12.5px;color:#BFD3FE;font-weight:500;}
+  .total-box .big{font-family:var(--display);font-size:36px;font-weight:800;letter-spacing:-.8px;line-height:1.2;margin-top:2px;}
+  .fin-inline{display:flex;justify-content:space-between;margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.14);gap:10px;}
+  .fin-inline div{display:flex;flex-direction:column;}
+  .fin-inline .k{font-size:11.5px;color:#BFD3FE;}
+  .fin-inline .v{font-size:14px;font-weight:700;}
+  .fin-mensualite{
+    display:flex;align-items:baseline;justify-content:space-between;
+    margin-top:14px;padding:14px 16px;border-radius:12px;background:rgba(255,255,255,.10);
+  }
+  .fin-mensualite .unit{font-size:13px;color:#DBE6FF;}
+  .fin-mensualite .amt{font-family:var(--display);font-size:24px;font-weight:800;color:#6EE7B7;}
+
+  .compare-body{padding:4px 22px 22px;}
+  .fin-row{display:flex;justify-content:space-between;font-size:13.5px;color:var(--muted);padding:7px 0;}
+  .fin-row .v{font-weight:700;color:var(--text);}
+  .legend{display:flex;gap:16px;font-size:12px;color:var(--muted);margin:14px 0 4px;}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px;}
+  .compare-bars{margin-top:8px;display:flex;flex-direction:column;gap:12px;max-height:340px;overflow-y:auto;padding-right:4px;}
+  .bar-row{font-size:12px;color:var(--muted);}
+  .bar-row .yr{display:flex;justify-content:space-between;margin-bottom:5px;}
+  .bar-row .yr b{color:var(--text-2);font-weight:600;}
+  .bar-track{height:7px;background:var(--line-2);border-radius:99px;overflow:hidden;margin-top:3px;}
+  .bar-fill{height:100%;border-radius:99px;transition:width .3s;}
+  .bar-fill.old{background:linear-gradient(90deg,#FCA5A5,var(--rose));}
+  .bar-fill.new{background:linear-gradient(90deg,#6EE7B7,var(--accent));}
+
+  .savings-result{margin-top:16px;padding:16px 18px;border-radius:14px;}
+  .savings-result.positive{background:var(--accent-soft);border:1px solid #A7F3D0;}
+  .savings-result.negative{background:var(--rose-soft);border:1px solid #FECACA;}
+  .savings-result .amt{font-family:var(--display);font-size:24px;font-weight:800;}
+  .savings-result.positive .amt{color:#047857;}
+  .savings-result.negative .amt{color:#B91C1C;}
+  .savings-result .cap{font-size:12.5px;color:var(--text-2);margin-top:2px;}
+
+  .print-btn{
+    width:100%;padding:14px;background:var(--primary);border:none;color:#fff;border-radius:12px;
+    cursor:pointer;font-size:15px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:9px;
+    box-shadow:0 8px 20px rgba(37,99,235,.28);transition:background .15s, transform .15s;
+  }
+  .print-btn:hover{background:var(--primary-2);transform:translateY(-1px);}
+  .trust{display:flex;justify-content:center;gap:16px;font-size:12px;color:var(--muted);flex-wrap:wrap;}
+  .trust span{display:flex;align-items:center;gap:5px;}
+
+  /* ---------- MODAL DEVIS ---------- */
+  .modal-backdrop{
+    position:fixed;inset:0;z-index:100;background:rgba(11,27,63,.55);
+    backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+    display:none;align-items:center;justify-content:center;padding:16px;
+  }
+  .modal-backdrop.open{display:flex;animation:fadeIn .2s ease;}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  @keyframes slideUp{from{transform:translateY(16px);opacity:0}to{transform:none;opacity:1}}
+  .modal{
+    background:#fff;border-radius:20px;width:100%;max-width:560px;max-height:92vh;overflow-y:auto;
+    box-shadow:0 30px 80px rgba(11,27,63,.35);animation:slideUp .25s ease;
+  }
+  .modal-head{padding:24px 26px 6px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;}
+  .modal-head h3{font-family:var(--display);font-size:21px;font-weight:800;margin:0;letter-spacing:-.3px;}
+  .modal-head p{margin:4px 0 0;font-size:13.5px;color:var(--muted);}
+  .modal-close{
+    width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:#fff;
+    cursor:pointer;color:var(--muted);display:grid;place-items:center;flex-shrink:0;
+  }
+  .modal-close:hover{background:var(--bg);color:var(--text);}
+  .modal-body{padding:18px 26px 26px;display:flex;flex-direction:column;gap:18px;}
+  .modal-section-title{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:0 0 10px;}
+  .req{color:var(--rose);}
+  .field-error{font-size:12px;color:var(--rose);font-weight:500;display:none;}
+  .field.has-error input{border-color:var(--rose);box-shadow:0 0 0 4px rgba(239,68,68,.12);}
+  .field.has-error .field-error{display:block;}
+  .row-street{display:grid;grid-template-columns:1fr 130px;gap:16px;}
+  .row-city{display:grid;grid-template-columns:130px 1fr;gap:16px;}
+  @media (max-width:480px){.row-street,.row-city{grid-template-columns:1fr;}}
+  .type-btn,.civ-btn{
+    background:transparent;border:none;color:var(--muted);padding:9px 18px;border-radius:9px;
+    cursor:pointer;font-size:14px;font-weight:600;transition:all .15s;
+  }
+  .type-btn:hover,.civ-btn:hover{color:var(--text);}
+  .type-btn.active,.civ-btn.active{background:#fff;color:var(--primary);box-shadow:0 1px 3px rgba(15,23,42,.10);}
+  .civ-field{display:flex;flex-direction:column;gap:7px;font-size:13px;font-weight:600;color:var(--text-2);}
+  .civ-field.has-error .segmented{border-color:var(--rose);}
+  .msg-preview{display:none;flex-direction:column;gap:10px;}
+  .msg-preview.show{display:flex;}
+  .msg-preview textarea{
+    width:100%;min-height:220px;resize:vertical;padding:16px;border-radius:12px;
+    border:1px solid #BFD3FE;background:var(--primary-soft);color:var(--text);
+    font-family:var(--sans);font-size:14px;line-height:1.6;
+  }
+  .msg-preview textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 4px var(--primary-ring);}
+  .recap-box{border:1px solid var(--line);border-radius:14px;overflow:hidden;}
+  .recap-row{display:flex;justify-content:space-between;gap:12px;padding:11px 16px;font-size:13.5px;color:var(--text-2);}
+  .recap-row + .recap-row{border-top:1px solid var(--line-2);}
+  .recap-row b{color:var(--text);white-space:nowrap;}
+  .recap-row.total{background:var(--navy);color:#fff;font-weight:600;}
+  .recap-row.total b{color:#fff;font-family:var(--display);font-size:17px;}
+  .recap-row.mens{background:var(--accent-soft);color:#065F46;font-weight:600;}
+  .recap-row.mens b{color:#047857;}
+  .recap-empty{padding:18px;text-align:center;color:var(--muted);font-size:13.5px;background:var(--bg);border-radius:12px;}
+  .modal-actions{display:flex;gap:10px;flex-wrap:wrap;}
+  .btn-primary{
+    flex:1;min-width:200px;padding:14px;background:var(--primary);border:none;color:#fff;border-radius:12px;
+    cursor:pointer;font-size:15px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:8px;
+  }
+  .btn-primary:hover{background:var(--primary-2);}
+  .btn-ghost{
+    padding:14px 18px;background:#fff;border:1px solid var(--line);color:var(--text-2);border-radius:12px;
+    cursor:pointer;font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px;
+  }
+  .btn-ghost:hover{background:var(--bg);}
+  .modal-success{
+    display:none;padding:14px 16px;border-radius:12px;background:var(--accent-soft);color:#065F46;
+    font-size:13.5px;font-weight:500;
+  }
+  .modal-success.show{display:block;}
+
+  @media print{
+    body{background:#fff;}
+    .header,.hero,main,.print-btn,.trust{display:none !important;}
+    .layout{display:block;padding:0;}
+    aside{position:static;}
+    .side-card{box-shadow:none;}
+    .compare-bars{max-height:none;}
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <div class="brand" aria-label="RW Outil">
+      <div class="logo">RW</div>
+      <div class="brand-name">OUTIL</div>
+    </div>
+    <div class="header-right">
+      <span class="date-pill" id="dateNow"></span>
+      <span class="badge-free">Simulation gratuite</span>
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <span class="eyebrow">Devis personnalisé en 2 minutes grâce à Isaac</span>
+  <h1>Composez votre installation et <span>calculez vos économies</span></h1>
+  <p>Activez les équipements souhaités, ajustez les paramètres du logement et obtenez instantanément le montant, la mensualité et les économies sur la durée du prêt.</p>
+  <div class="chef-banner" aria-label="RenovaWall vous cuisine votre solution">
+    <div class="chef-scene">
+      <span class="chef">👨‍🍳</span>
+      <span class="pan">🍳</span>
+      <span class="steam s1">💨</span>
+      <span class="steam s2">💨</span>
+      <span class="spark k1">☀️</span>
+      <span class="spark k2">⚡</span>
+      <span class="spark k3">🔥</span>
+    </div>
+    <div class="chef-text">
+      <strong>RenovaWall</strong>
+      <span>vous cuisine votre solution<span class="dots"><i>.</i><i>.</i><i>.</i></span></span>
+    </div>
+  </div>
+</section>
+
+<div class="layout">
+  <main>
+
+    <!-- 1. AIR/EAU -->
+    <section class="card" data-card="toggleAirEau">
+      <div class="card-head">
+        <div class="card-icon ic-blue">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.7c3 3.3 6 6.6 6 10.3a6 6 0 0 1-12 0c0-3.7 3-7 6-10.3z"/></svg>
+        </div>
+        <div class="card-title">
+          <span class="step-num">Étape 01</span>
+          <h2>Pompe à chaleur air/eau</h2>
+          <p>Chauffage central via radiateurs ou plancher chauffant</p>
+        </div>
+        <label class="switch">
+          <span class="switch-label">Inclure</span>
+          <input type="checkbox" id="toggleAirEau">
+          <span class="switch-track"></span>
+        </label>
+      </div>
+      <div class="section-content disabled" id="contentAirEau">
+        <div class="field-group">
+          <div class="row3">
+            <label class="field">Volume du logement (m³)
+              <input type="number" id="aeVolume" min="0" step="1" placeholder="250">
+            </label>
+            <label class="field">Température cible (°C)
+              <input type="number" id="aeTemp" min="0" step="0.5" placeholder="21">
+            </label>
+            <label class="field">Isolation
+              <select id="aeIso">
+                <option value="1">Très bonne (1)</option>
+                <option value="1.2" selected>Normale (1,2)</option>
+                <option value="1.4">Mauvaise (1,4)</option>
+              </select>
+            </label>
+          </div>
+          <label class="field">Surface habitable (m²) <span class="field-hint">Sert à estimer la consommation</span>
+            <input type="number" id="aeSurface" min="0" step="1" placeholder="120">
+          </label>
+        </div>
+        <div class="result-line" id="aeResult">Renseignez le volume, la température et l'isolation.</div>
+      </div>
+    </section>
+
+    <!-- 2. AIR/AIR -->
+    <section class="card" data-card="toggleAirAir">
+      <div class="card-head">
+        <div class="card-icon ic-cyan">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"/><path d="M9.6 4.6A2 2 0 1 1 11 8H2"/><path d="M12.6 19.4A2 2 0 1 0 14 16H2"/></svg>
+        </div>
+        <div class="card-title">
+          <span class="step-num">Étape 02</span>
+          <h2>Pompe à chaleur air/air</h2>
+          <p>Climatisation réversible par splits, pièce par pièce</p>
+        </div>
+        <label class="switch">
+          <span class="switch-label">Inclure</span>
+          <input type="checkbox" id="toggleAirAir">
+          <span class="switch-track"></span>
+        </label>
+      </div>
+      <div class="section-content disabled" id="contentAirAir">
+        <div class="field-group">
+          <div class="row2">
+            <label class="field">Température cible (°C)
+              <input type="number" id="aaTemp" min="0" step="0.5" placeholder="21">
+            </label>
+            <label class="field">Isolation
+              <select id="aaIso">
+                <option value="1">Très bonne (1)</option>
+                <option value="1.2" selected>Normale (1,2)</option>
+                <option value="1.4">Mauvaise (1,4)</option>
+              </select>
+            </label>
+          </div>
+        </div>
+        <div class="rooms">
+          <div class="rooms-head"><span>Pièce</span><span>Volume (m³)</span><span></span></div>
+          <div id="roomsList" style="display:flex;flex-direction:column;gap:10px;"></div>
+        </div>
+        <button class="btn-add" id="addRoom" type="button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          Ajouter une pièce
+        </button>
+        <div class="result-line" id="aaResult">Ajoutez au moins une pièce.</div>
+      </div>
+    </section>
+
+    <!-- 3. BALLON -->
+    <section class="card" data-card="toggleBallon">
+      <div class="card-head">
+        <div class="card-icon ic-rose">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="4"/><path d="M10 7h4M12 12v4"/></svg>
+        </div>
+        <div class="card-title">
+          <span class="step-num">Étape 03</span>
+          <h2>Ballon thermodynamique</h2>
+          <p>Eau chaude sanitaire à faible consommation</p>
+        </div>
+        <label class="switch">
+          <span class="switch-label">Inclure</span>
+          <input type="checkbox" id="toggleBallon">
+          <span class="switch-track"></span>
+        </label>
+      </div>
+      <div class="section-content disabled" id="contentBallon">
+        <label class="field">Capacité
+          <select id="ballonSize">
+            <optgroup label="Vertical sur socle · Airwell">
+              <option value="120">120 L · 2 500 €</option>
+              <option value="190">190 L · 3 000 €</option>
+              <option value="260">260 L · 3 500 €</option>
+            </optgroup>
+            <optgroup label="Split mural/sol · Thermor">
+              <option value="200">200 L · 3 500 €</option>
+              <option value="270">270 L · 4 000 €</option>
+            </optgroup>
+          </select>
+        </label>
+      </div>
+    </section>
+
+    <!-- 4. PV -->
+    <section class="card" data-card="togglePv">
+      <div class="card-head">
+        <div class="card-icon ic-amber">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20 6 8h12l3 12z"/><path d="M4.5 14h15M9 8l-1.5 12M15 8l1.5 12"/><path d="M12 2v2"/></svg>
+        </div>
+        <div class="card-title">
+          <span class="step-num">Étape 04</span>
+          <h2>Panneaux photovoltaïques + batterie</h2>
+          <p>Pack complet : panneaux et batterie de stockage incluse</p>
+        </div>
+        <label class="switch">
+          <span class="switch-label">Inclure</span>
+          <input type="checkbox" id="togglePv">
+          <span class="switch-track"></span>
+        </label>
+      </div>
+      <div class="section-content disabled" id="contentPv">
+        <p class="sub-label">Barème tarifaire</p>
+        <div class="segmented" id="pvTariffSelect">
+          <button type="button" class="tariff-btn active" data-tariff="minimum">Minimum <span class="pct">6%</span></button>
+          <button type="button" class="tariff-btn" data-tariff="renova">RenovaWall <span class="pct">10%</span></button>
+          <button type="button" class="tariff-btn" data-tariff="haut">Haut <span class="pct">15%</span></button>
+        </div>
+
+        <p class="sub-label" style="margin-top:22px;">Puissance installée</p>
+        <div class="pv-grid" id="pvGrid"></div>
+
+        <div class="pv-summary" id="pvResult" style="display:none;"></div>
+      </div>
+    </section>
+
+    <!-- 5. BATTERIE SEULE -->
+    <section class="card" data-card="toggleBattery">
+      <div class="card-head">
+        <div class="card-icon ic-green">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="17" height="10" rx="2"/><path d="M22 11v2M10 9l-2 3h4l-2 3"/></svg>
+        </div>
+        <div class="card-title">
+          <span class="step-num">Étape 05</span>
+          <h2>Batterie de stockage seule</h2>
+          <p>Vendue indépendamment du pack photovoltaïque</p>
+        </div>
+        <label class="switch">
+          <span class="switch-label">Inclure</span>
+          <input type="checkbox" id="toggleBattery">
+          <span class="switch-track"></span>
+        </label>
+      </div>
+      <div class="section-content disabled" id="contentBattery">
+        <label class="field">Capacité
+          <select id="batteryStandaloneSize">
+            <option value="5">5 kW · 5 000 €</option>
+            <option value="10">10 kW · 8 500 €</option>
+          </select>
+        </label>
+      </div>
+    </section>
+
+    <!-- 6. EQUIPEMENTS -->
+    <section class="card">
+      <div class="card-head">
+        <div class="card-icon ic-violet">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 5v14M11 5v14M15 5v14M19 5v14"/></svg>
+        </div>
+        <div class="card-title">
+          <span class="step-num">Étape 06</span>
+          <h2>Équipements complémentaires</h2>
+          <p>Radiateurs et sèche-serviettes, à l'unité</p>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="equip-grid">
+          <div class="equip">
+            <div><div class="equip-name">Radiateur Ténérife</div><div class="equip-price">À inertie · 900 € / unité</div></div>
+            <div class="qty-stepper" data-target="qtyRad">
+              <button type="button" data-dir="-1">−</button><span id="qtyRad">0</span><button type="button" data-dir="1">+</button>
+            </div>
+          </div>
+          <div class="equip">
+            <div><div class="equip-name">Sèche-serviette Riva 4</div><div class="equip-price">800 € / unité</div></div>
+            <div class="qty-stepper" data-target="qtyServRiva">
+              <button type="button" data-dir="-1">−</button><span id="qtyServRiva">0</span><button type="button" data-dir="1">+</button>
+            </div>
+          </div>
+          <div class="equip">
+            <div><div class="equip-name">Sèche-serviette Illico 3</div><div class="equip-price">500 € / unité</div></div>
+            <div class="qty-stepper" data-target="qtyServIllico">
+              <button type="button" data-dir="-1">−</button><span id="qtyServIllico">0</span><button type="button" data-dir="1">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. COMPARATIF -->
+    <section class="card">
+      <div class="card-head">
+        <div class="card-icon ic-blue">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 6-6"/></svg>
+        </div>
+        <div class="card-title">
+          <span class="step-num">Étape 07</span>
+          <h2>Dépenses actuelles</h2>
+          <p>Chauffage et eau chaude que la nouvelle installation va remplacer</p>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="field-group">
+          <div class="row3">
+            <label class="field">Gaz (€ / mois)
+              <input type="number" id="curGaz" min="0" step="1" placeholder="200">
+            </label>
+            <label class="field">Fioul (€ / mois)
+              <input type="number" id="curFioul" min="0" step="1" placeholder="0">
+            </label>
+            <label class="field">Électricité chauffage (€ / mois)
+              <input type="number" id="curElec" min="0" step="1" placeholder="120">
+            </label>
+          </div>
+          <div class="row3">
+            <label class="field">Prix du kWh (€)
+              <input type="number" id="prixKwh" min="0" step="0.001" value="0.25">
+            </label>
+            <label class="field">Hausse annuelle énergie (%)
+              <input type="number" id="hausseAnnuelle" min="0" step="0.1" value="8">
+            </label>
+            <label class="field">Taux du crédit (%) <span class="field-hint">Entre 3 et 9 %</span>
+              <input type="number" id="tauxCredit" min="0" step="0.1" value="5">
+            </label>
+          </div>
+        </div>
+        <div class="note">La consommation de la nouvelle installation (PAC air/eau, splits, ballon) est estimée automatiquement et valorisée au prix du kWh renseigné.</div>
+      </div>
+    </section>
+
+  </main>
+
+  <aside>
+    <div class="side-card">
+      <div class="side-head">
+        <h3>Votre devis</h3>
+        <span class="side-count" id="itemCount">0 article</span>
+      </div>
+      <div id="lineItems"></div>
+      <div class="total-box">
+        <div class="cap">Montant total de l'installation</div>
+        <div class="big" id="totalAmount">0 €</div>
+        <div class="fin-inline">
+          <div><span class="k">Durée du prêt</span><span class="v" id="finDuree">·</span></div>
+          <div style="text-align:right;"><span class="k">Taux</span><span class="v" id="finTaux">·</span></div>
+        </div>
+        <div class="fin-mensualite">
+          <span class="unit">Mensualité</span>
+          <span class="amt" id="finMensualite">· €</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-card">
+      <div class="side-head"><h3>Comparatif sur la durée du prêt</h3></div>
+      <div class="compare-body">
+        <div class="fin-row"><span>Nouvelle conso. estimée</span><span class="v" id="newConsoKwh">· kWh/an</span></div>
+        <div class="fin-row"><span>Dépense actuelle (mois 1)</span><span class="v" id="oldMonth1">· €</span></div>
+        <div class="fin-row"><span>Nouvelle dépense (mois 1)</span><span class="v" id="newMonth1">· €</span></div>
+        <div class="legend"><span><i style="background:var(--rose)"></i>Actuel</span><span><i style="background:var(--accent)"></i>Nouveau</span></div>
+        <div class="compare-bars" id="compareBars"></div>
+        <div class="savings-result positive" id="savingsResult">
+          <div class="amt" id="savingsAmt">·</div>
+          <div class="cap" id="savingsCap">économie estimée sur la durée du prêt</div>
+        </div>
+      </div>
+    </div>
+
+    <button class="print-btn" id="openQuote" type="button">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg>
+      Demander un devis détaillé
+    </button>
+    <div class="trust">
+      <span>✓ Sans engagement</span><span>✓ Données non enregistrées</span>
+    </div>
+  </aside>
+</div>
+
+<div class="modal-backdrop" id="quoteModal" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="quoteTitle">
+    <div class="modal-head">
+      <div>
+        <h3 id="quoteTitle">Demande de devis détaillé</h3>
+        <p>Renseignez le client, le message de demande de devis est généré automatiquement.</p>
+      </div>
+      <button class="modal-close" type="button" id="closeQuote" aria-label="Fermer">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div>
+        <p class="modal-section-title">Coordonnées du client</p>
+        <div class="field-group">
+          <div class="field civ-field" id="fCiv"><span>Civilité <span class="req">*</span></span>
+            <div class="segmented" style="width:fit-content;">
+              <button type="button" class="civ-btn" data-civ="M.">Monsieur</button>
+              <button type="button" class="civ-btn" data-civ="Mme">Madame</button>
+            </div>
+            <span class="field-error">Choisissez Monsieur ou Madame</span>
+          </div>
+          <div class="row2">
+            <label class="field" id="fPrenom">Prénom <span class="req">*</span>
+              <input type="text" id="cliPrenom" placeholder="Jean" autocomplete="given-name">
+              <span class="field-error">Prénom requis</span>
+            </label>
+            <label class="field" id="fNom">Nom <span class="req">*</span>
+              <input type="text" id="cliNom" placeholder="Dupont" autocomplete="family-name">
+              <span class="field-error">Nom requis</span>
+            </label>
+          </div>
+          <div class="row2">
+            <label class="field" id="fEmail">Adresse e-mail <span class="req">*</span>
+              <input type="text" id="cliEmail" placeholder="jean.dupont@email.be" autocomplete="email" inputmode="email">
+              <span class="field-error">Adresse e-mail invalide</span>
+            </label>
+            <label class="field" id="fTel">GSM / Téléphone
+              <input type="text" id="cliTel" placeholder="+32 470 12 34 56" autocomplete="tel" inputmode="tel">
+              <span class="field-error">Numéro invalide</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <p class="modal-section-title">Adresse du logement</p>
+        <div class="field-group">
+          <div class="row-street">
+            <label class="field">Rue
+              <input type="text" id="cliRue" placeholder="Rue de la Loi" autocomplete="address-line1">
+            </label>
+            <label class="field">N° / boîte
+              <input type="text" id="cliNum" placeholder="16 bte 2">
+            </label>
+          </div>
+          <div class="row-city">
+            <label class="field" id="fCp">Code postal
+              <input type="text" id="cliCp" placeholder="1000" maxlength="4" autocomplete="postal-code" inputmode="numeric">
+              <span class="field-error">4 chiffres</span>
+            </label>
+            <label class="field">Localité
+              <input type="text" id="cliVille" placeholder="Bruxelles" autocomplete="address-level2">
+            </label>
+          </div>
+          <label class="field">Région
+            <select id="cliRegion">
+              <option value="">Sélectionner</option>
+              <option value="Région de Bruxelles-Capitale">Bruxelles-Capitale</option>
+              <option value="Wallonie">Wallonie</option>
+              <option value="Flandre">Flandre</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div>
+        <p class="modal-section-title">Type de client</p>
+        <div class="segmented" id="cliTypeSelect">
+          <button type="button" class="type-btn active" data-type="particulier">Particulier</button>
+          <button type="button" class="type-btn" data-type="entreprise">Entreprise</button>
+        </div>
+        <label class="field" id="fTva" style="margin-top:14px;display:none;">N° de TVA
+          <input type="text" id="cliTva" placeholder="BE0123.456.789">
+          <span class="field-error">Format attendu : BE0123.456.789</span>
+        </label>
+      </div>
+
+      <div>
+        <p class="modal-section-title">Équipements demandés</p>
+        <div id="quoteRecap"></div>
+      </div>
+
+      <div class="msg-preview" id="msgPreview">
+        <p class="modal-section-title" style="margin:0;">Message généré</p>
+        <textarea id="msgText" spellcheck="false"></textarea>
+      </div>
+
+      <div class="modal-success" id="quoteSuccess"></div>
+
+      <div class="modal-actions">
+        <button class="btn-ghost" type="button" id="copyQuote">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Copier le message
+        </button>
+        <button class="btn-primary" type="button" id="sendQuote">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg>
+          Générer le message
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ---------- STATIC DATA ----------
+const PV_POWER_MODULES = {3:6,4:8,5:10,6:12,7:14,8:16,9:18,10:20,11:22};
+// Batterie incluse dans le pack PV : 15 kW à partir de 16 panneaux, sinon 10 kW
+const PV_BATTERY_BY_MODULES = modules => modules>=16 ? 15 : 10;
+const PV_TARIFFS = {
+  minimum: {label:'Minimum', pct:'6%', prices:{3:6800,4:8900,5:10000,6:11100,7:12200,8:13300,9:14400,10:15500,11:16500}},
+  renova:  {label:'RenovaWall', pct:'10%', prices:{3:9000,4:10500,5:12000,6:13500,7:14000,8:15500,9:17000,10:18500,11:20000}},
+  haut:    {label:'Haut', pct:'15%', prices:{3:14500,4:15500,5:16500,6:18500,7:20500,8:22500,9:23500,10:24500,11:25500}}
+};
+const BOILER_PRICES = {120:2500,190:3000,260:3500,200:3500,270:4000};
+const AIR_AIR_PRICES = {1:2900,2:5000,3:7500,4:11500,5:14000,6:15500,7:17000,8:18500,9:20000,10:21500};
+const AIR_AIR_TIERS = [
+  {max:2500, kw:2.5, conso:450},
+  {max:3500, kw:3.5, conso:900},
+  {max:5000, kw:5,   conso:900}
+];
+const AIR_EAU_PRICES = {9:15500,11:17000,14:18500,16:20000,20:24500,25:25500};
+const AIR_EAU_TIERS = [9,11,14,16,20,25];
+const BATTERY_STANDALONE_PRICES = {5:5000,10:8500};
+const RADIATEUR_PRICE = 900;
+const SERVIETTE_PRICES = {riva:800, illico:500};
+const BALLON_CONSO_ESTIME = {120:1100, 190:1500, 260:1900, 200:1500, 270:1900};
+
+let pvTariff = 'minimum';
+let pvPower = 3;
+
+const fmt = n => Math.round(n).toLocaleString('fr-FR') + ' €';
+const fmtKwh = n => Math.round(n).toLocaleString('fr-FR') + ' kWh/an';
+
+// ---------- STATE ----------
+let rooms = [];
+let roomIdSeq = 0;
+
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+function addRoom(){
+  roomIdSeq++;
+  rooms.push({id: roomIdSeq, nom:'', volume:null});
+  renderRooms();
+  compute();
+}
+function removeRoom(id){
+  rooms = rooms.filter(r=>r.id!==id);
+  renderRooms();
+  compute();
+}
+function renderRooms(){
+  const list = document.getElementById('roomsList');
+  list.innerHTML = '';
+  rooms.forEach(r=>{
+    const row = document.createElement('div');
+    row.className='room-row';
+    row.innerHTML = `
+      <input type="text" placeholder="Ex. Salon" value="${escapeHtml(r.nom)}" data-id="${r.id}" data-f="nom">
+      <input type="number" placeholder="m³" min="0" value="${r.volume ?? ''}" data-id="${r.id}" data-f="volume">
+      <button class="btn-remove" type="button" data-id="${r.id}" aria-label="Supprimer">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
+      </button>`;
+    list.appendChild(row);
+  });
+  list.querySelectorAll('input').forEach(inp=>{
+    inp.addEventListener('input', e=>{
+      const id = Number(e.target.dataset.id);
+      const f = e.target.dataset.f;
+      const room = rooms.find(x=>x.id===id);
+      room[f] = f==='volume' ? Number(e.target.value) : e.target.value;
+      compute();
+    });
+  });
+  list.querySelectorAll('.btn-remove').forEach(btn=>{
+    btn.addEventListener('click', ()=> removeRoom(Number(btn.dataset.id)));
+  });
+}
+
+// ---------- TOGGLES ----------
+function wireToggle(toggleId, contentId){
+  const t = document.getElementById(toggleId);
+  const c = document.getElementById(contentId);
+  const card = document.querySelector(`[data-card="${toggleId}"]`);
+  t.addEventListener('change', ()=>{
+    c.classList.toggle('disabled', !t.checked);
+    if(card) card.classList.toggle('is-on', t.checked);
+    compute();
+  });
+}
+wireToggle('toggleAirEau','contentAirEau');
+wireToggle('toggleAirAir','contentAirAir');
+wireToggle('toggleBallon','contentBallon');
+wireToggle('togglePv','contentPv');
+wireToggle('toggleBattery','contentBattery');
+
+document.querySelectorAll('.qty-stepper').forEach(stepper=>{
+  const span = document.getElementById(stepper.dataset.target);
+  stepper.querySelectorAll('button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      span.textContent = Math.max(0, Number(span.textContent) + Number(btn.dataset.dir));
+      compute();
+    });
+  });
+});
+
+document.getElementById('addRoom').addEventListener('click', addRoom);
+
+// ---------- PV CARDS ----------
+function renderPvGrid(){
+  const grid = document.getElementById('pvGrid');
+  grid.innerHTML = '';
+  Object.keys(PV_POWER_MODULES).forEach(kwStr=>{
+    const kw = Number(kwStr);
+    const modules = PV_POWER_MODULES[kw];
+    const batt = PV_BATTERY_BY_MODULES(modules);
+    const price = PV_TARIFFS[pvTariff].prices[kw];
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'pv-card' + (kw===pvPower ? ' active' : '');
+    card.innerHTML = `
+      <div class="pv-kw">${kw} <small>kWc</small></div>
+      <div class="pv-mod">${modules} panneaux</div>
+      <span class="pv-batt ${batt===15?'b15':'b10'}">+ Batterie ${batt} kW</span>
+      <div class="pv-price">${fmt(price)}</div>
+      <div class="pv-price-cap">PV + batterie inclus</div>`;
+    card.addEventListener('click', ()=>{
+      pvPower = kw;
+      renderPvGrid();
+      compute();
+    });
+    grid.appendChild(card);
+  });
+}
+document.querySelectorAll('.tariff-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    pvTariff = btn.dataset.tariff;
+    document.querySelectorAll('.tariff-btn').forEach(b=>b.classList.toggle('active', b===btn));
+    renderPvGrid();
+    compute();
+  });
+});
+
+document.addEventListener('input', compute);
+document.addEventListener('change', compute);
+
+// ---------- CORE CALCULATIONS ----------
+function pickAirEauTier(kwNeeded){
+  for(const t of AIR_EAU_TIERS){ if(kwNeeded <= t) return t; }
+  return null;
+}
+function pickAirAirTier(result){
+  for(const t of AIR_AIR_TIERS){ if(result <= t.max) return t; }
+  return {max:Infinity, kw:5, conso:900, overflow:true};
+}
+
+function computeAirEau(){
+  const on = document.getElementById('toggleAirEau').checked;
+  const el = document.getElementById('aeResult');
+  if(!on) return {active:false, price:0, conso:0, label:null};
+
+  const vol = Number(document.getElementById('aeVolume').value)||0;
+  const temp = Number(document.getElementById('aeTemp').value)||0;
+  const iso = Number(document.getElementById('aeIso').value)||1.2;
+  const surface = Number(document.getElementById('aeSurface').value)||0;
+
+  if(vol<=0 || temp<=0){
+    el.textContent = "Renseignez le volume, la température et l'isolation.";
+    el.classList.remove('warn');
+    return {active:true, price:0, conso:0, label:null};
+  }
+
+  const puissanceKw = vol * (temp+9) * iso / 1000;
+  const tier = pickAirEauTier(puissanceKw);
+  const conso = surface>0 ? surface*20 : 0;
+
+  if(!tier){
+    el.textContent = `Puissance calculée : ${puissanceKw.toFixed(1)} kW. Elle dépasse la gamme disponible (25 kW max), prévoir plusieurs unités.`;
+    el.classList.add('warn');
+    return {active:true, price:0, conso:0, label:null};
+  }
+
+  el.classList.remove('warn');
+  el.innerHTML = `<span>Puissance calculée : <b>${puissanceKw.toFixed(1)} kW</b> · modèle retenu : <b>${tier} kW</b> (${fmt(AIR_EAU_PRICES[tier])})` +
+    (conso>0 ? ` · consommation estimée <b>${fmtKwh(conso)}</b>` : '') + `</span>`;
+
+  return {active:true, price:AIR_EAU_PRICES[tier], conso, label:`PAC air/eau ${tier} kW`};
+}
+
+function computeAirAir(){
+  const on = document.getElementById('toggleAirAir').checked;
+  const el = document.getElementById('aaResult');
+  if(!on) return {active:false, price:0, conso:0, label:null};
+
+  const temp = Number(document.getElementById('aaTemp').value)||0;
+  const iso = Number(document.getElementById('aaIso').value)||1.2;
+
+  if(rooms.length===0 || temp<=0){
+    el.textContent = 'Ajoutez au moins une pièce et renseignez la température.';
+    el.classList.remove('warn');
+    return {active:true, price:0, conso:0, label:null};
+  }
+
+  let totalConso = 0, overflow = false, detail = [];
+  rooms.forEach(r=>{
+    const v = r.volume||0;
+    if(v<=0) return;
+    const tier = pickAirAirTier(v * (temp+9) * iso);
+    if(tier.overflow) overflow = true;
+    totalConso += tier.conso;
+    detail.push(`${escapeHtml(r.nom||'Pièce')} → ${tier.kw} kW`);
+  });
+
+  const nbSplits = rooms.filter(r=>(r.volume||0)>0).length;
+  const capped = Math.min(nbSplits, 10);
+  const price = capped>0 ? AIR_AIR_PRICES[capped] : 0;
+  const splitLabel = ['','Monosplit','Bisplit','Trisplit','Quadrisplit','Pentasplit','Sextuplesplit','7-Split','8-Split','9-Split','10-Split'][capped] || `${capped}-Split`;
+
+  el.classList.toggle('warn', overflow);
+  el.innerHTML = detail.length
+    ? `<span>${detail.join(' · ')}<br>Système : <b>${splitLabel}</b> (${fmt(price)})${overflow ? '. Une pièce dépasse 5 kW, prévoir un split supplémentaire.' : ''}</span>`
+    : 'Renseignez le volume des pièces.';
+
+  return {active:true, price, conso: totalConso, label: nbSplits>0 ? `PAC air/air · ${splitLabel}` : null};
+}
+
+function computeBallon(){
+  if(!document.getElementById('toggleBallon').checked) return {active:false, price:0, conso:0, label:null};
+  const size = Number(document.getElementById('ballonSize').value);
+  return {active:true, price:BOILER_PRICES[size], conso:BALLON_CONSO_ESTIME[size], label:`Ballon thermodynamique ${size} L`};
+}
+
+function computePv(){
+  const el = document.getElementById('pvResult');
+  if(!document.getElementById('togglePv').checked){ el.style.display='none'; return {active:false, price:0, label:null}; }
+
+  const kw = pvPower;
+  const tariffData = PV_TARIFFS[pvTariff];
+  const price = tariffData.prices[kw];
+  const modules = PV_POWER_MODULES[kw];
+  const batteryKw = PV_BATTERY_BY_MODULES(modules);
+
+  el.style.display='block';
+  el.innerHTML = `
+    <div class="pv-summary-row"><span>Panneaux photovoltaïques</span><b>${kw} kWc · ${modules} panneaux</b></div>
+    <div class="pv-summary-row"><span>Batterie de stockage</span><span><b>${batteryKw} kW</b> <span class="tag">Incluse</span></span></div>
+    <div class="pv-summary-row"><span>Barème</span><b>${tariffData.label} (${tariffData.pct})</b></div>
+    <div class="pv-summary-row total"><span>Tarif PV + batterie ${batteryKw} kW</span><span>${fmt(price)}</span></div>`;
+
+  return {active:true, price, label:`PV ${kw} kWc (${modules} panneaux) + batterie ${batteryKw} kW`};
+}
+
+function computeBatteryStandalone(){
+  if(!document.getElementById('toggleBattery').checked) return {active:false, price:0, label:null};
+  const size = Number(document.getElementById('batteryStandaloneSize').value);
+  return {active:true, price:BATTERY_STANDALONE_PRICES[size], label:`Batterie ${size} kW (hors pack PV)`};
+}
+
+function getDuration(total){
+  if(total<=20000) return 84;
+  if(total<=37000) return 120;
+  return 180;
+}
+
+function compute(){
+  const ae = computeAirEau();
+  const aa = computeAirAir();
+  const ballon = computeBallon();
+  const pv = computePv();
+  const batt = computeBatteryStandalone();
+  const nbRad = Number(document.getElementById('qtyRad').textContent);
+  const nbServRiva = Number(document.getElementById('qtyServRiva').textContent);
+  const nbServIllico = Number(document.getElementById('qtyServIllico').textContent);
+
+  const items = [];
+  if(ae.active && ae.price>0) items.push({label: ae.label, price: ae.price});
+  if(aa.active && aa.price>0) items.push({label: aa.label, price: aa.price});
+  if(ballon.active) items.push({label: ballon.label, price: ballon.price});
+  if(pv.active && pv.price>0) items.push({label: pv.label, price: pv.price});
+  if(batt.active) items.push({label: batt.label, price: batt.price});
+  if(nbRad>0) items.push({label:`Radiateur à inertie ×${nbRad}`, price: nbRad*RADIATEUR_PRICE});
+  if(nbServRiva>0) items.push({label:`Sèche-serviette Riva 4 ×${nbServRiva}`, price: nbServRiva*SERVIETTE_PRICES.riva});
+  if(nbServIllico>0) items.push({label:`Sèche-serviette Illico 3 ×${nbServIllico}`, price: nbServIllico*SERVIETTE_PRICES.illico});
+
+  const lineItemsEl = document.getElementById('lineItems');
+  lineItemsEl.innerHTML = '';
+  if(items.length===0){
+    lineItemsEl.innerHTML = '<div class="line-item empty">Aucun équipement sélectionné</div>';
+  } else {
+    items.forEach(it=>{
+      const row = document.createElement('div');
+      row.className='line-item';
+      row.innerHTML = `<span>${it.label}</span><span class="v">${fmt(it.price)}</span>`;
+      lineItemsEl.appendChild(row);
+    });
+  }
+  document.getElementById('itemCount').textContent = `${items.length} article${items.length>1?'s':''}`;
+
+  const total = items.reduce((s,it)=>s+it.price,0);
+  document.getElementById('totalAmount').textContent = fmt(total);
+
+  // financing
+  const taux = Number(document.getElementById('tauxCredit').value)||5;
+  const duree = total>0 ? getDuration(total) : 0;
+  const r = taux/100/12;
+  const mensualite = (total>0 && duree>0) ? total * r / (1 - Math.pow(1+r, -duree)) : 0;
+  document.getElementById('finDuree').textContent = duree ? `${duree} mois (${duree/12} ans)` : '·';
+  document.getElementById('finTaux').textContent = `${taux.toFixed(2)} %`;
+  document.getElementById('finMensualite').textContent = mensualite>0 ? fmt(mensualite) : '· €';
+
+  // energy comparison
+  const curGaz = Number(document.getElementById('curGaz').value)||0;
+  const curFioul = Number(document.getElementById('curFioul').value)||0;
+  const curElec = Number(document.getElementById('curElec').value)||0;
+  const prixKwh = Number(document.getElementById('prixKwh').value)||0;
+  const hausse = (Number(document.getElementById('hausseAnnuelle').value)||0)/100;
+
+  const oldMonthly1 = curGaz + curFioul + curElec;
+  const newConsoAnnuelle = (ae.active?ae.conso:0) + (aa.active?aa.conso:0) + (ballon.active?ballon.conso:0);
+  const newElecMonthly1 = newConsoAnnuelle * prixKwh / 12;
+  const newMonthly1 = mensualite + newElecMonthly1;
+
+  document.getElementById('newConsoKwh').textContent = fmtKwh(newConsoAnnuelle);
+  document.getElementById('oldMonth1').textContent = fmt(oldMonthly1);
+  document.getElementById('newMonth1').textContent = fmt(newMonthly1);
+
+  const years = duree>0 ? Math.round(duree/12) : 0;
+  const barsEl = document.getElementById('compareBars');
+  barsEl.innerHTML = '';
+  let totalOld = 0, totalNew = 0;
+  const maxVal = Math.max(oldMonthly1*Math.pow(1+hausse,Math.max(0,years-1)), newMonthly1*Math.pow(1+hausse,Math.max(0,years-1)), 1);
+
+  for(let y=0; y<years; y++){
+    const factor = Math.pow(1+hausse, y);
+    const oldY = oldMonthly1*factor*12;
+    const newY = (mensualite*12) + (newElecMonthly1*factor*12);
+    totalOld += oldY;
+    totalNew += newY;
+    if(years<=15){
+      const row = document.createElement('div');
+      row.className='bar-row';
+      row.innerHTML = `<div class="yr"><b>Année ${y+1}</b><span>${fmt(oldY/12)} → ${fmt(newY/12)} /mois</span></div>
+        <div class="bar-track"><div class="bar-fill old" style="width:${Math.min(100,(oldY/12/maxVal)*100)}%"></div></div>
+        <div class="bar-track"><div class="bar-fill new" style="width:${Math.min(100,(newY/12/maxVal)*100)}%"></div></div>`;
+      barsEl.appendChild(row);
+    }
+  }
+
+  const savings = totalOld - totalNew;
+  const savingsEl = document.getElementById('savingsResult');
+  const savingsAmt = document.getElementById('savingsAmt');
+  const savingsCap = document.getElementById('savingsCap');
+  if(years>0){
+    savingsEl.classList.toggle('positive', savings>=0);
+    savingsEl.classList.toggle('negative', savings<0);
+    savingsAmt.textContent = (savings>=0?'+':'') + fmt(savings);
+    savingsCap.textContent = savings>=0
+      ? `économie estimée sur ${years} ans vs dépenses actuelles (hausse de ${(hausse*100).toFixed(1)} %/an)`
+      : `surcoût estimé sur ${years} ans par rapport aux dépenses actuelles`;
+  } else {
+    savingsEl.classList.remove('negative');
+    savingsEl.classList.add('positive');
+    savingsAmt.textContent = '·';
+    savingsCap.textContent = 'complétez le devis pour voir le comparatif';
+  }
+
+  lastQuote = {items, total, mensualite, duree, taux, years, savings};
+}
+
+// ---------- DEMANDE DE DEVIS ----------
+let lastQuote = {items:[], total:0, mensualite:0, duree:0, taux:0, years:0, savings:0};
+const modal = document.getElementById('quoteModal');
+
+function renderQuoteRecap(){
+  const box = document.getElementById('quoteRecap');
+  const q = lastQuote;
+  if(q.items.length===0){
+    box.innerHTML = '<div class="recap-empty">Aucun équipement sélectionné. Activez au moins un équipement dans le simulateur.</div>';
+    return;
+  }
+  let html = '<div class="recap-box">';
+  q.items.forEach(it=>{ html += `<div class="recap-row"><span>${it.label}</span><b>${fmt(it.price)}</b></div>`; });
+  html += `<div class="recap-row total"><span>Total installation</span><b>${fmt(q.total)}</b></div>`;
+  if(q.mensualite>0){
+    html += `<div class="recap-row mens"><span>Financement ${q.duree} mois à ${q.taux.toFixed(2)} %</span><b>${fmt(q.mensualite)} / mois</b></div>`;
+  }
+  html += '</div>';
+  box.innerHTML = html;
+}
+
+function openQuote(){
+  compute();
+  renderQuoteRecap();
+  document.getElementById('quoteSuccess').classList.remove('show');
+  document.getElementById('msgPreview').classList.remove('show');
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden','false');
+  document.body.style.overflow='hidden';
+  setTimeout(()=>document.getElementById('cliPrenom').focus(), 50);
+}
+function closeQuote(){
+  modal.classList.remove('open');
+  modal.setAttribute('aria-hidden','true');
+  document.body.style.overflow='';
+}
+document.getElementById('openQuote').addEventListener('click', openQuote);
+document.getElementById('closeQuote').addEventListener('click', closeQuote);
+modal.addEventListener('click', e=>{ if(e.target===modal) closeQuote(); });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape' && modal.classList.contains('open')) closeQuote(); });
+
+// --- Adresse, téléphone, TVA ---
+let clientType = 'particulier';
+document.querySelectorAll('.type-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    clientType = btn.dataset.type;
+    document.querySelectorAll('.type-btn').forEach(b=>b.classList.toggle('active', b===btn));
+    document.getElementById('fTva').style.display = clientType==='entreprise' ? 'flex' : 'none';
+  });
+});
+
+function regionFromCp(cp){
+  const n = Number(cp);
+  if(!/^\d{4}$/.test(cp)) return '';
+  if(n>=1000 && n<=1299) return 'Région de Bruxelles-Capitale';
+  if((n>=1300 && n<=1499) || (n>=4000 && n<=7999)) return 'Wallonie';
+  if((n>=1500 && n<=3999) || (n>=8000 && n<=9999)) return 'Flandre';
+  return '';
+}
+document.getElementById('cliCp').addEventListener('input', e=>{
+  e.target.value = e.target.value.replace(/\D/g,'').slice(0,4);
+  const r = regionFromCp(e.target.value);
+  if(r) document.getElementById('cliRegion').value = r;
+});
+
+function normalizeBePhone(raw){
+  let d = raw.replace(/[\s.\-\/()]/g,'');
+  if(d.startsWith('0032')) d = '+32' + d.slice(4);
+  if(d.startsWith('0')) d = '+32' + d.slice(1);
+  return d;
+}
+function is
