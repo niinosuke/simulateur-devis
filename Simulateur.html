@@ -670,9 +670,8 @@
       <div class="section-content disabled" id="contentPv">
         <p class="sub-label">Barème tarifaire</p>
         <div class="segmented" id="pvTariffSelect">
-          <button type="button" class="tariff-btn active" data-tariff="minimum">Minimum <span class="pct">6%</span></button>
-          <button type="button" class="tariff-btn" data-tariff="renova">RenovaWall <span class="pct">10%</span></button>
-          <button type="button" class="tariff-btn" data-tariff="haut">Haut <span class="pct">15%</span></button>
+          <button type="button" class="tariff-btn active" data-tariff="renova">RenovaWall <span class="pct">10%</span></button>
+          <button type="button" class="tariff-btn" data-tariff="haut">Haut <span class="pct">12%</span></button>
         </div>
 
         <p class="sub-label" style="margin-top:22px;">Puissance installée</p>
@@ -954,9 +953,8 @@ const PV_POWER_MODULES = {3:6,4:8,5:10,6:12,7:14,8:16,9:18,10:20,11:22};
 // Batterie incluse dans le pack PV : 15 kW à partir de 16 panneaux, sinon 10 kW
 const PV_BATTERY_BY_MODULES = modules => modules>=16 ? 15 : 10;
 const PV_TARIFFS = {
-  minimum: {label:'Minimum', pct:'6%', prices:{3:6800,4:8900,5:10000,6:11100,7:12200,8:13300,9:14400,10:15500,11:16500}},
   renova:  {label:'RenovaWall', pct:'10%', prices:{3:9000,4:10500,5:12000,6:13500,7:14000,8:15500,9:17000,10:18500,11:20000}},
-  haut:    {label:'Haut', pct:'15%', prices:{3:14500,4:15500,5:16500,6:18500,7:20500,8:22500,9:23500,10:24500,11:25500}}
+  haut:    {label:'Haut', pct:'12%', prices:{3:14500,4:15500,5:16500,6:18500,7:20500,8:22500,9:23500,10:24500,11:25500}}
 };
 const BOILER_PRICES = {120:2500,190:3000,260:3500,200:3500,270:4000};
 const AIR_AIR_PRICES = {1:2900,2:5000,3:7500,4:11500,5:14000,6:15500,7:17000,8:18500,9:20000,10:21500};
@@ -972,7 +970,7 @@ const RADIATEUR_PRICE = 900;
 const SERVIETTE_PRICES = {riva:800, illico:500};
 const BALLON_CONSO_ESTIME = {120:1100, 190:1500, 260:1900, 200:1500, 270:1900};
 
-let pvTariff = 'minimum';
+let pvTariff = 'renova';
 let pvPower = 3;
 
 const fmt = n => Math.round(n).toLocaleString('fr-FR') + ' €';
@@ -1116,7 +1114,7 @@ function computeAirEau(){
     return {active:true, price:0, conso:0, label:null};
   }
 
-  const puissanceKw = vol * (temp+9) * iso / 1000;
+  const puissanceKw = vol * (temp+8) * iso / 1000;
   const tier = pickAirEauTier(puissanceKw);
   const conso = surface>0 ? surface*20 : 0;
 
@@ -1203,6 +1201,8 @@ function computeBatteryStandalone(){
 }
 
 function getDuration(total){
+  if(total<=10000) return 48;
+  if(total<=15000) return 60;
   if(total<=20000) return 84;
   if(total<=37000) return 120;
   return 180;
@@ -1524,11 +1524,11 @@ document.getElementById('sendQuote').addEventListener('click', ()=>{
   document.getElementById('msgText').value = msg;
   document.getElementById('msgPreview').classList.add('show');
 
-  const email = document.getElementById('cliEmail').value.trim();
   const subject = encodeURIComponent('Demande de devis détaillé');
   const body = encodeURIComponent(msg);
-  window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
-  showQuoteSuccess("Votre messagerie va s'ouvrir avec le message pré-rempli.");
+  const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent('Contact@renovawall.be')}&su=${subject}&body=${body}`;
+  window.open(gmailUrl, '_blank');
+  showQuoteSuccess("Gmail va s'ouvrir avec le message pré-rempli, adressé à Contact@renovawall.be.");
 });
 
 // ---------- INIT ----------
